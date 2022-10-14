@@ -2,14 +2,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto/crypto.dart';
-import 'package:test_flutter_app/menu_screen.dart';
 import 'package:test_flutter_app/pin_button.dart';
 import 'package:test_flutter_app/pin_dot.dart';
 
 class PinScreenAuth extends StatelessWidget {
   const PinScreenAuth({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return const PinScreenPage(title: 'Authorize PIN');
@@ -18,15 +16,6 @@ class PinScreenAuth extends StatelessWidget {
 
 class PinScreenPage extends StatefulWidget {
   const PinScreenPage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -42,8 +31,8 @@ class _PinScreenState extends State<PinScreenPage> {
     super.initState();
   }
 
-  String hashPin(String pin) {
-    return sha256.convert(utf8.encode(pin)).toString();
+  String hashCurrentPin() {
+    return sha256.convert(utf8.encode(currentPin)).toString();
   }
 
   Future<void> _showResultDialog(BuildContext context, bool success) {
@@ -70,9 +59,9 @@ class _PinScreenState extends State<PinScreenPage> {
     );
   }
 
-  verifyPin(String pin) async {
+  verifyCurrentPin() async {
     final prefs = await SharedPreferences.getInstance();
-    String hashedPin = hashPin(pin);
+    String hashedPin = hashCurrentPin();
     String? storedPin = prefs.getString("pin_hashed");
     bool verified = hashedPin == storedPin;
     debugPrint("VERIFIED:: $verified");
@@ -80,24 +69,23 @@ class _PinScreenState extends State<PinScreenPage> {
   }
 
   addNumber(int number) {
+    const MAX_PIN_LENGTH = 4;
     String oldPin = currentPin;
-    if(oldPin.length >= 4) return;
+    if(oldPin.length >= MAX_PIN_LENGTH) return;
     String newPin = oldPin + number.toString();
     setState(() {
       currentPin = newPin;
 
-      if(currentPin.length >= 4) {
-        verifyPin(currentPin);
+      if(currentPin.length >= MAX_PIN_LENGTH) {
+        verifyCurrentPin();
       }
     });
   }
 
   removeNumber() {
     String oldPin = currentPin;
-    debugPrint(oldPin);
     if(oldPin.isEmpty) return;
     String newPin = oldPin.substring(0, oldPin.length - 1);
-    debugPrint(newPin);
     setState(() {
       currentPin = newPin;
     });
@@ -105,26 +93,16 @@ class _PinScreenState extends State<PinScreenPage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text("Enter your pin"),
+            const Text("Enter your PIN"),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -187,7 +165,7 @@ class _PinScreenState extends State<PinScreenPage> {
             )
           ],
         ),
-      ) // This trailing comma makes auto-formatting nicer for build methods.
+      )
     );
   }
 }

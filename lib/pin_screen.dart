@@ -7,8 +7,6 @@ import 'package:test_flutter_app/pin_dot.dart';
 
 class PinScreen extends StatelessWidget {
   const PinScreen({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return const PinScreenPage(title: 'Create a PIN');
@@ -36,16 +34,8 @@ class _PinScreenState extends State<PinScreenPage> {
     _loadSharedPrefs();
   }
 
-  bool isNewUser() {
-    return _hashedPin == null;
-  }
-
-  String? getPin() {
-    return _hashedPin;
-  }
-
-  String hashPin(String pin) {
-    return sha256.convert(utf8.encode(pin)).toString();
+  String hashCurrentPin() {
+    return sha256.convert(utf8.encode(currentPin)).toString();
   }
 
   Future<void> _showPinSavedDialog(BuildContext context, bool success) {
@@ -72,9 +62,9 @@ class _PinScreenState extends State<PinScreenPage> {
     );
   }
 
-  setPin(String pin) async {
+  saveCurrentPin() async {
     final prefs = await SharedPreferences.getInstance();
-    String hashedPin = hashPin(pin);
+    String hashedPin = hashCurrentPin();
     prefs.setString("pin_hashed", hashedPin);
     setState(() {
       _hashedPin = hashedPin;
@@ -96,7 +86,7 @@ class _PinScreenState extends State<PinScreenPage> {
           currentPin = "";
         } else {
           if(currentPin == initialPin) {
-            setPin(currentPin);
+            saveCurrentPin();
           } else {
             _showPinSavedDialog(context, false);
           }
@@ -127,22 +117,12 @@ class _PinScreenState extends State<PinScreenPage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     String promptText = confirming ? "Confirm your PIN" : "Create a PIN";
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
